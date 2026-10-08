@@ -122,7 +122,28 @@
           </div>
         </div>
 
-        <!-- 3장 선택 슬롯 (선택된 카드가 배치되는 영역) -->
+        <!-- 78장 타로 인터랙티브 스프레드 뷰어 (먼저 표시) -->
+        <div class="tarot-spread-board">
+          <div class="deck-scroll-indicator">
+            <i class="fa-solid fa-angles-left"></i> 좌우로 스크롤하여 78장의 신비로운 카드를 탐색하고 끌리는 카드를 터치하세요 <i class="fa-solid fa-angles-right"></i>
+          </div>
+          <div class="tarot-fan-wrapper" id="tarotCardsContainer">
+            <!-- 78장 타로 카드가 JS를 통해 동적 생성됨 -->
+          </div>
+        </div>
+
+        <!-- 진행 상태 바 및 리딩 시작 버튼 (선택 진행 상황) -->
+        <div class="selection-status-bar">
+          <div class="counter-box">
+            선택 진행률: <span id="selectedCountText" class="gold-count">0</span> / 3장 선택됨
+          </div>
+          <button id="openReadingBtn" class="cta-gold-btn pulse-glow" disabled>
+            <i class="fa-solid fa-eye"></i>
+            <span>3장의 카드 공개 & Gemini 운세 해석 열기</span>
+          </button>
+        </div>
+
+        <!-- 3장 선택 슬롯 (선택된 카드가 배치되는 영역 - 나중에 표시) -->
         <div class="selected-slots-container">
           <!-- 1번 슬롯: 과거 / 현재 상황 -->
           <div class="card-slot" id="slot-0" data-index="0">
@@ -164,54 +185,33 @@
           </div>
         </div>
 
-        <!-- 진행 상태 바 및 리딩 시작 버튼 -->
-        <div class="selection-status-bar">
-          <div class="counter-box">
-            선택 진행률: <span id="selectedCountText" class="gold-count">0</span> / 3장 선택됨
-          </div>
-          <button id="openReadingBtn" class="cta-gold-btn pulse-glow" disabled>
-            <i class="fa-solid fa-eye"></i>
-            <span>3장의 카드 공개 & Gemini 운세 해석 열기</span>
-          </button>
-        </div>
-
-        <!-- 78장 타로 인터랙티브 스프레드 뷰어 -->
-        <div class="tarot-spread-board">
-          <div class="deck-scroll-indicator">
-            <i class="fa-solid fa-angles-left"></i> 좌우로 스크롤하여 78장의 신비로운 카드를 탐색하세요 <i class="fa-solid fa-angles-right"></i>
-          </div>
-          <div class="tarot-fan-wrapper" id="tarotCardsContainer">
-            <!-- 78장 타로 카드가 JS를 통해 동적 생성됨 -->
-          </div>
-
-          <!-- 덱 맨 아래 숨겨진 시크릿 카드 (The Shadow Card) -->
-          <div class="secret-card-teaser-wrap">
-            <div class="secret-card-teaser-box" id="secretCardTeaser">
-              <div class="secret-badge"><i class="fa-solid fa-key"></i> THE SECRET ARCANA · 덱 맨 아래의 시크릿 카드</div>
-              <div class="secret-teaser-inner">
-                <div class="secret-card-preview-mini" id="secretCardMiniPreview">
-                  <div class="mini-card-back">
-                    <span class="mini-sigil">🔮</span>
-                    <span class="mini-label">SECRET</span>
-                  </div>
-                </div>
-                <div class="secret-teaser-info">
-                  <h4 class="secret-teaser-title">스프레드 맨 아래에 숨겨진 시크릿 카드 (Shadow Card)</h4>
-                  <p class="secret-teaser-desc">
-                    78장 덱의 맨 밑바닥에 머무는 이 카드는 <strong>당신조차 미처 의식하지 못한 무의식의 깊은 본심과 보이지 않는 핵심 열쇠</strong>를 담고 있습니다.
-                  </p>
-                </div>
-                <div class="secret-teaser-action">
-                  <button type="button" id="peekSecretCardBtn" class="glass-btn small-btn purple-glow-btn">
-                    <i class="fa-solid fa-eye"></i> <span id="peekBtnText">시크릿 카드 확인하기</span>
-                  </button>
+        <!-- 덱 맨 아래 숨겨진 시크릿 카드 (The Shadow Card) -->
+        <div class="secret-card-teaser-wrap">
+          <div class="secret-card-teaser-box" id="secretCardTeaser">
+            <div class="secret-badge"><i class="fa-solid fa-key"></i> THE SECRET ARCANA · 덱 맨 아래의 시크릿 카드</div>
+            <div class="secret-teaser-inner">
+              <div class="secret-card-preview-mini" id="secretCardMiniPreview">
+                <div class="mini-card-back">
+                  <span class="mini-sigil">🔮</span>
+                  <span class="mini-label">SECRET</span>
                 </div>
               </div>
-
-              <!-- 인라인 시크릿 카드 엿보기 오픈 영역 -->
-              <div id="inlineSecretPeekBox" class="inline-secret-box hidden">
-                <!-- JS로 엿보기 렌더링 -->
+              <div class="secret-teaser-info">
+                <h4 class="secret-teaser-title">스프레드 맨 아래에 숨겨진 시크릿 카드 (Shadow Card)</h4>
+                <p class="secret-teaser-desc">
+                  78장 덱의 맨 밑바닥에 머무는 이 카드는 <strong>당신조차 미처 의식하지 못한 무의식의 깊은 본심과 보이지 않는 핵심 열쇠</strong>를 담고 있습니다.
+                </p>
               </div>
+              <div class="secret-teaser-action">
+                <button type="button" id="peekSecretCardBtn" class="glass-btn small-btn purple-glow-btn">
+                  <i class="fa-solid fa-eye"></i> <span id="peekBtnText">시크릿 카드 확인하기</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 인라인 시크릿 카드 엿보기 오픈 영역 -->
+            <div id="inlineSecretPeekBox" class="inline-secret-box hidden">
+              <!-- JS로 엿보기 렌더링 -->
             </div>
           </div>
         </div>

@@ -656,7 +656,10 @@
     if (STATE.selectedCards.length === 3) {
       DOM.openReadingBtn.disabled = false;
       sound.playChime();
-      showToast("운명의 3장이 모두 선택되었습니다! 아래 '해석 열기'를 눌러주세요.");
+      showToast("운명의 3장이 모두 선택되었습니다! 아래 선택된 카드와 해석 열기 버튼을 확인하세요.");
+      setTimeout(() => {
+        DOM.openReadingBtn.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 400);
     }
   }
 
