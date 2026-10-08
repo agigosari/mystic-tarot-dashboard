@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>미스틱 타로 오라클 (Mystic Tarot Oracle) | Gemini AI 운세</title>
+  
+  <!-- SEO & 메타 태그 -->
+  <meta name="description" content="오늘 하루, 금주, 이번달, 3개월 운세를 78장의 타로카드와 Gemini AI가 주관식 질문에 맞추어 깊이 있게 해석해 드립니다.">
+  <meta property="og:title" content="미스틱 타로 오라클 - Gemini AI 타로 리딩">
+  <meta property="og:description" content="78장 타로 스프레드에서 3장을 선택하여 나만의 맞춤형 운세를 확인해보세요.">
+  <meta property="og:type" content="website">
+  
+  <!-- 웹폰트 & 폰트어썸 아이콘 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Noto+Serif+KR:wght@300;400;600;700;900&family=Pretendard:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- 별빛 캔버스 배경 -->
+  <canvas id="starCanvas"></canvas>
+
+  <div class="app-container">
+    <!-- 헤더 바 -->
+    <header class="main-header">
+      <div class="brand">
+        <span class="brand-symbol">🔮</span>
+        <div class="brand-text">
+          <h1 class="brand-title">MYSTIC TAROT ORACLE</h1>
+          <p class="brand-subtitle">Gemini AI 78 아르카나 운세 리딩 대시보드</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button id="soundToggleBtn" class="glass-btn icon-only" title="신비로운 음향 토글" aria-label="음향 토글">
+          <i class="fa-solid fa-volume-high"></i>
+        </button>
+        <button id="apiKeyModalBtn" class="glass-btn gold-glow" title="Gemini API Key 설정">
+          <i class="fa-solid fa-key"></i>
+          <span class="btn-text">Gemini API 설정</span>
+          <span id="apiKeyBadge" class="status-dot"></span>
+        </button>
+      </div>
+    </header>
+
+    <!-- 메인 컨텐츠 영역 -->
+    <main class="content-wrapper">
+      
+      <!-- [STEP 1 & 2] 질문 & 운세 기간 설정 섹션 -->
+      <section id="stepIntro" class="active-step-panel">
+        <div class="oracle-intro-card glass-panel">
+          <div class="mystic-orb-wrap">
+            <div class="mystic-orb"></div>
+            <div class="orb-ring ring-1"></div>
+            <div class="orb-ring ring-2"></div>
+          </div>
+          <h2 class="section-title">당신의 운명을 비추는 타로의 지혜</h2>
+          <p class="section-desc">
+            마음을 정돈하고 지금 가장 궁금하거나 조언이 필요한 질문을 떠올려보세요.<br>
+            78장의 정통 타로 덱이 당신의 과거, 현재, 그리고 미래의 흐름을 밝혀드립니다.
+          </p>
+
+          <!-- 기간 선택 탭 -->
+          <div class="period-selector-wrap">
+            <label class="input-label"><i class="fa-regular fa-clock"></i> 살펴보고 싶은 운세 주기</label>
+            <div class="period-btn-group" role="radiogroup">
+              <button class="period-btn active" data-period="today">
+                <span class="period-icon">☀️</span>
+                <span class="period-name">오늘 하루 운세</span>
+                <span class="period-sub">오늘 하루의 에너지와 조언</span>
+              </button>
+              <button class="period-btn" data-period="week">
+                <span class="period-icon">🌙</span>
+                <span class="period-name">금주 운세</span>
+                <span class="period-sub">이번 주의 주요 흐름과 전환점</span>
+              </button>
+              <button class="period-btn" data-period="month">
+                <span class="period-icon">✨</span>
+                <span class="period-name">이번달 운세</span>
+                <span class="period-sub">한 달 동안 맞이할 기회와 주의점</span>
+              </button>
+              <button class="period-btn" data-period="quarter">
+                <span class="period-icon">🌌</span>
+                <span class="period-name">3개월 운세</span>
+                <span class="period-sub">중기적 비전과 운명의 도약</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 주관식 질문 입력 -->
+          <div class="question-input-wrap">
+            <label for="userQuestionInput" class="input-label">
+              <i class="fa-solid fa-feather-pointed"></i> 질문을 구체적으로 적어주세요 (주관식)
+            </label>
+            <div class="input-with-clear">
+              <textarea id="userQuestionInput" rows="3" 
+                placeholder="예: '오늘 있을 중요한 발표나 미팅이 성공적으로 잘 풀릴 수 있을까요?', '이번 주 이직 준비나 커리어 확장에서 어떤 기회를 잡아야 할까요?'"
+                maxlength="200"></textarea>
+              <span id="charCounter" class="char-count">0 / 200</span>
+            </div>
+
+            <!-- 추천 질문 프리셋 칩 -->
+            <div class="preset-chips">
+              <span class="preset-label">💡 추천 질문 예시:</span>
+              <button type="button" class="preset-chip">오늘 하루를 관통하는 핵심 기운과 조언은?</button>
+              <button type="button" class="preset-chip">최근 준비 중인 프로젝트/업무의 성공 흐름</button>
+              <button type="button" class="preset-chip">이번 주 대인관계 및 새로운 인연의 가능성</button>
+              <button type="button" class="preset-chip">예상치 못한 재물운과 기회의 신호</button>
+            </div>
+          </div>
+
+          <!-- 진행 버튼 -->
+          <div class="action-btn-row">
+            <button id="startSpreadBtn" class="cta-gold-btn">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+              <span>78장 카드 셔플 & 펼치기</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- [STEP 3] 78장 카드 셔플 및 스프레드 선택 섹션 -->
+      <section id="stepSpread" class="hidden-panel">
+        <div class="spread-header glass-panel">
+          <div class="spread-info-text">
+            <div class="tag-badge" id="currentPeriodBadge">☀️ 오늘 하루 운세</div>
+            <h2 class="spread-title" id="spreadQuestionTitle">"오늘 미팅이 성공적으로 끝날 수 있을까요?"</h2>
+            <p class="spread-guide">
+              <span class="highlight-pulse">✨ 직관에 집중하세요:</span>
+              아래 펼쳐진 78장의 카드 중에서 가장 끌리는 <strong>3장의 카드</strong>를 순서대로 터치(클릭)하세요.
+            </p>
+          </div>
+
+          <div class="spread-controls">
+            <button id="reshuffleBtn" class="glass-btn small-btn">
+              <i class="fa-solid fa-shuffle"></i> 덱 다시 섞기
+            </button>
+            <button id="backToIntroBtn" class="glass-btn small-btn">
+              <i class="fa-solid fa-arrow-left"></i> 질문 수정
+            </button>
+          </div>
+        </div>
+
+        <!-- 3장 선택 슬롯 (선택된 카드가 배치되는 영역) -->
+        <div class="selected-slots-container">
+          <!-- 1번 슬롯: 과거 / 현재 상황 -->
+          <div class="card-slot" id="slot-0" data-index="0">
+            <div class="slot-badge">CARD 1</div>
+            <div class="slot-title">과거 & 현재 상황</div>
+            <div class="slot-desc">현재 당신을 둘러싼 배경과 에너지</div>
+            <div class="slot-card-holder empty">
+              <div class="empty-placeholder">
+                <i class="fa-regular fa-clone"></i>
+                <span>첫 번째 카드를 선택하세요</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2번 슬롯: 장애물 & 마주한 과제 / 조언 -->
+          <div class="card-slot" id="slot-1" data-index="1">
+            <div class="slot-badge">CARD 2</div>
+            <div class="slot-title">도전 과제 & 행동 조언</div>
+            <div class="slot-desc">주의해야 할 점과 취해야 할 태도</div>
+            <div class="slot-card-holder empty">
+              <div class="empty-placeholder">
+                <i class="fa-regular fa-clone"></i>
+                <span>두 번째 카드를 선택하세요</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3번 슬롯: 미래 흐름 & 최종 결과 -->
+          <div class="card-slot" id="slot-2" data-index="2">
+            <div class="slot-badge">CARD 3</div>
+            <div class="slot-title">미래 흐름 & 최종 결실</div>
+            <div class="slot-desc">질문에 대한 최종적 방향과 결과</div>
+            <div class="slot-card-holder empty">
+              <div class="empty-placeholder">
+                <i class="fa-regular fa-clone"></i>
+                <span>세 번째 카드를 선택하세요</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 진행 상태 바 및 리딩 시작 버튼 -->
+        <div class="selection-status-bar">
+          <div class="counter-box">
+            선택 진행률: <span id="selectedCountText" class="gold-count">0</span> / 3장 선택됨
+          </div>
+          <button id="openReadingBtn" class="cta-gold-btn pulse-glow" disabled>
+            <i class="fa-solid fa-eye"></i>
+            <span>3장의 카드 공개 & Gemini 운세 해석 열기</span>
+          </button>
+        </div>
+
+        <!-- 78장 타로 인터랙티브 스프레드 뷰어 -->
+        <div class="tarot-spread-board">
+          <div class="deck-scroll-indicator">
+            <i class="fa-solid fa-angles-left"></i> 좌우로 스크롤하여 78장의 신비로운 카드를 탐색하세요 <i class="fa-solid fa-angles-right"></i>
+          </div>
+          <div class="tarot-fan-wrapper" id="tarotCardsContainer">
+            <!-- 78장 타로 카드가 JS를 통해 동적 생성됨 -->
+          </div>
+        </div>
+      </section>
+
+      <!-- [STEP 4] 3장 카드 공개 & Gemini AI 타로 해석 대시보드 -->
+      <section id="stepReading" class="hidden-panel">
+        <div class="reading-header glass-panel">
+          <div class="reading-meta">
+            <span class="period-badge-gold" id="readingPeriodBadge">☀️ 오늘 하루 운세</span>
+            <span class="ai-provider-badge" id="readingEngineBadge">
+              <i class="fa-solid fa-microchip"></i> Gemini AI 2.5 Flash
+            </span>
+          </div>
+          <h2 class="reading-question-heading" id="readingQuestionDisplay">"..."</h2>
+          <p class="reading-time" id="readingTimestamp">2026. 10. 08 운세</p>
+        </div>
+
+        <!-- 3장 카드 디스플레이 쇼케이스 (3D 플립 애니메이션) -->
+        <div class="cards-showcase-grid" id="cardsShowcaseGrid">
+          <!-- JS로 동적 렌더링 -->
+        </div>
+
+        <!-- Gemini AI 종합 심층 리딩 결과 창 -->
+        <div class="reading-result-panel glass-panel">
+          <div class="reading-panel-header">
+            <div class="reader-avatar">
+              <span class="avatar-icon">🔮</span>
+            </div>
+            <div class="reader-meta">
+              <h3 class="reader-title">Gemini AI 오라클의 맞춤형 심층 해석</h3>
+              <p class="reader-subtitle">질문자의 질문 맥락과 3장의 카드 상징 체계를 종합적으로 융합한 해설입니다.</p>
+            </div>
+            <div class="reading-tools">
+              <button id="copyResultBtn" class="glass-btn small-btn" title="해석 결과 복사">
+                <i class="fa-regular fa-copy"></i> 복사
+              </button>
+            </div>
+          </div>
+
+          <!-- 로딩 인디케이터 (Gemini 호출 중) -->
+          <div id="readingLoadingIndicator" class="reading-loading-wrap">
+            <div class="mystic-spinner">
+              <div class="spinner-circle"></div>
+              <div class="spinner-symbol">✨</div>
+            </div>
+            <h4 class="loading-main-text">우주의 에너지를 조율하며 카드를 해석 중입니다...</h4>
+            <p class="loading-sub-text">Gemini AI가 당신의 질문과 아르카나 카드의 상징을 분석하고 있습니다.</p>
+          </div>
+
+          <!-- 실제 해석 내용 표시 (마크다운 / 포맷 텍스트) -->
+          <div id="readingContentContainer" class="reading-content-body hidden">
+            <!-- 텍스트 타이핑 이펙트 렌더링 -->
+          </div>
+
+          <!-- 오늘의 행운 조언 박스 (Lucky Indicators) -->
+          <div id="luckyInsightsBox" class="lucky-insights-row hidden">
+            <div class="lucky-item">
+              <div class="lucky-icon">🌟</div>
+              <div class="lucky-label">행운의 키워드</div>
+              <div class="lucky-value" id="luckyKeyword">직관, 돌파, 조화</div>
+            </div>
+            <div class="lucky-item">
+              <div class="lucky-icon">🎨</div>
+              <div class="lucky-label">행운의 컬러</div>
+              <div class="lucky-value" id="luckyColor">로얄 퍼플 & 골드</div>
+            </div>
+            <div class="lucky-item">
+              <div class="lucky-icon">🔢</div>
+              <div class="lucky-label">행운의 숫자</div>
+              <div class="lucky-value" id="luckyNumber">7, 19</div>
+            </div>
+            <div class="lucky-item">
+              <div class="lucky-icon">🕊️</div>
+              <div class="lucky-label">마음가짐 조언</div>
+              <div class="lucky-value" id="luckyMantra">서두르지 말고 내면의 평온을 지키기</div>
+            </div>
+          </div>
+
+          <!-- 하단 액션 버튼 그룹 -->
+          <div class="reading-footer-actions">
+            <button id="newReadingBtn" class="cta-gold-btn">
+              <i class="fa-solid fa-rotate-right"></i> 새로운 운세 보기 (다시 점치기)
+            </button>
+            <button id="shareReadingBtn" class="glass-btn">
+              <i class="fa-solid fa-share-nodes"></i> 운세 링크 공유하기
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- 푸터 -->
+    <footer class="main-footer">
+      <p class="footer-note">
+        ✦ 본 타로 운세는 오락과 마인드풀니스, 긍정적 영감을 위한 도구입니다. 중요한 현실적 결정은 본인의 지혜와 전문가의 조언을 함께 고려하세요.
+      </p>
+      <p class="footer-copy">
+        Powered by <strong>Google Gemini AI</strong> & 78 Traditional Tarot Arcana · Open Source on GitHub
+      </p>
+    </footer>
+  </div>
+
+  <!-- ================= Gemini API 키 설정 모달 ================= -->
+  <div id="apiKeyModal" class="modal-backdrop hidden">
+    <div class="modal-content glass-panel">
+      <div class="modal-header">
+        <h3 class="modal-title"><i class="fa-solid fa-key gold-icon"></i> Gemini API Key 설정</h3>
+        <button id="closeApiKeyModalBtn" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">
+          Google AI Studio에서 무료로 발급받은 Gemini API 키를 입력하시면, 당신만의 전용 인공지능 타로 마스터가 활성화됩니다.
+        </p>
+
+        <div class="api-key-input-group">
+          <label for="geminiApiKeyInput" class="input-label">Gemini API Key</label>
+          <div class="input-with-toggle">
+            <input type="password" id="geminiApiKeyInput" placeholder="AIzaSy... 로 시작하는 API 키를 입력하세요" autocomplete="off">
+            <button type="button" id="toggleApiKeyVisibility" class="btn-input-icon">
+              <i class="fa-regular fa-eye"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="api-model-select-group">
+          <label for="geminiModelSelect" class="input-label">선호 모델 선택</label>
+          <select id="geminiModelSelect" class="glass-select">
+            <option value="gemini-2.5-flash">Gemini 2.5 Flash (권장: 초고속 & 최고 품질)</option>
+            <option value="gemini-1.5-flash">Gemini 1.5 Flash (안정적)</option>
+            <option value="gemini-1.5-pro">Gemini 1.5 Pro (깊고 문학적인 리딩)</option>
+          </select>
+        </div>
+
+        <div class="security-notice">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>입력하신 API 키는 서버로 전송되지 않으며, 오직 본인 브라우저의 로컬 스토리지에만 안전하게 보관됩니다.</span>
+        </div>
+
+        <div class="guide-box">
+          <div class="guide-title"><i class="fa-solid fa-circle-info"></i> API 키가 없으신가요? (무료 10초 발급)</div>
+          <ol class="guide-steps">
+            <li><a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">Google AI Studio (aistudio.google.com)</a> 에 접속합니다.</li>
+            <li>Google 계정으로 로그인 후 <strong>"Create API key"</strong> 버튼을 클릭합니다.</li>
+            <li>발급된 키를 복사하여 위 입력창에 붙여넣고 저장하세요. (평생 무료 한도 제공)</li>
+          </ol>
+          <p class="fallback-tip">💡 <em>키를 입력하지 않으셔도 내장된 고성능 타로 오라클 해석 엔진이 완벽하게 운세를 풀이해 드립니다!</em></p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="clearApiKeyBtn" class="glass-btn text-danger">키 삭제</button>
+        <button id="saveApiKeyBtn" class="cta-gold-btn">저장 & 활성화</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 공유 알림 토스트 -->
+  <div id="toastNotification" class="toast hidden">
+    <i class="fa-solid fa-check"></i> <span id="toastMsg">링크가 클립보드에 복사되었습니다!</span>
+  </div>
+
+  <!-- 자바스크립트 로드 -->
+  <script src="tarot-data.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
