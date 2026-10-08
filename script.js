@@ -299,13 +299,21 @@
   // ================= API KEY & BADGE MANAGEMENT =================
   function updateApiKeyStatus() {
     if (STATE.apiKey && STATE.apiKey.trim().length > 15) {
-      DOM.apiKeyBadge.classList.add("active");
-      DOM.apiKeyBadge.title = "Gemini API 활성화됨";
-      DOM.readingEngineBadge.innerHTML = `<i class="fa-solid fa-microchip"></i> Gemini AI (${STATE.model})`;
+      if (DOM.apiKeyBadge) {
+        DOM.apiKeyBadge.classList.add("active");
+        DOM.apiKeyBadge.title = "Gemini API 활성화됨";
+      }
+      if (DOM.readingEngineBadge) {
+        DOM.readingEngineBadge.innerHTML = `<i class="fa-solid fa-microchip"></i> Gemini AI (${STATE.model})`;
+      }
     } else {
-      DOM.apiKeyBadge.classList.remove("active");
-      DOM.apiKeyBadge.title = "내장 오라클 엔진 활성화됨";
-      DOM.readingEngineBadge.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> 내장 미스틱 오라클 엔진`;
+      if (DOM.apiKeyBadge) {
+        DOM.apiKeyBadge.classList.remove("active");
+        DOM.apiKeyBadge.title = "내장 오라클 엔진 활성화됨";
+      }
+      if (DOM.readingEngineBadge) {
+        DOM.readingEngineBadge.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> 내장 미스틱 오라클 엔진`;
+      }
     }
   }
 
@@ -379,26 +387,30 @@
 
     DOM.copyResultBtn.addEventListener("click", copyReadingResult);
 
-    // 8. 오디오 토글 버튼
-    DOM.soundToggleBtn.addEventListener("click", () => {
-      STATE.soundEnabled = !STATE.soundEnabled;
-      const icon = DOM.soundToggleBtn.querySelector("i");
-      if (STATE.soundEnabled) {
-        icon.className = "fa-solid fa-volume-high";
-        showToast("신비로운 사운드 효과가 켜졌습니다.");
-        sound.playCardSelect();
-      } else {
-        icon.className = "fa-solid fa-volume-xmark";
-        showToast("사운드 효과가 꺼졌습니다.");
-      }
-    });
+    // 8. 오디오 토글 버튼 (존재 시)
+    if (DOM.soundToggleBtn) {
+      DOM.soundToggleBtn.addEventListener("click", () => {
+        STATE.soundEnabled = !STATE.soundEnabled;
+        const icon = DOM.soundToggleBtn.querySelector("i");
+        if (STATE.soundEnabled) {
+          icon.className = "fa-solid fa-volume-high";
+          showToast("신비로운 사운드 효과가 켜졌습니다.");
+          sound.playCardSelect();
+        } else {
+          icon.className = "fa-solid fa-volume-xmark";
+          showToast("사운드 효과가 꺼졌습니다.");
+        }
+      });
+    }
 
-    // 9. API 키 모달 관련
-    DOM.apiKeyModalBtn.addEventListener("click", () => {
-      DOM.geminiApiKeyInput.value = STATE.apiKey;
-      DOM.geminiModelSelect.value = STATE.model;
-      DOM.apiKeyModal.classList.remove("hidden");
-    });
+    // 9. API 키 모달 관련 (존재 시)
+    if (DOM.apiKeyModalBtn) {
+      DOM.apiKeyModalBtn.addEventListener("click", () => {
+        DOM.geminiApiKeyInput.value = STATE.apiKey;
+        DOM.geminiModelSelect.value = STATE.model;
+        DOM.apiKeyModal.classList.remove("hidden");
+      });
+    }
 
     DOM.closeApiKeyModalBtn.addEventListener("click", () => {
       DOM.apiKeyModal.classList.add("hidden");
