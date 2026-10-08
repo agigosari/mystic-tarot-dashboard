@@ -204,6 +204,37 @@
           <div class="tarot-fan-wrapper" id="tarotCardsContainer">
             <!-- 78장 타로 카드가 JS를 통해 동적 생성됨 -->
           </div>
+
+          <!-- 덱 맨 아래 숨겨진 시크릿 카드 (The Shadow Card) -->
+          <div class="secret-card-teaser-wrap">
+            <div class="secret-card-teaser-box" id="secretCardTeaser">
+              <div class="secret-badge"><i class="fa-solid fa-key"></i> THE SECRET ARCANA · 덱 맨 아래의 시크릿 카드</div>
+              <div class="secret-teaser-inner">
+                <div class="secret-card-preview-mini" id="secretCardMiniPreview">
+                  <div class="mini-card-back">
+                    <span class="mini-sigil">🔮</span>
+                    <span class="mini-label">SECRET</span>
+                  </div>
+                </div>
+                <div class="secret-teaser-info">
+                  <h4 class="secret-teaser-title">스프레드 맨 아래에 숨겨진 시크릿 카드 (Shadow Card)</h4>
+                  <p class="secret-teaser-desc">
+                    78장 덱의 맨 밑바닥에 머무는 이 카드는 <strong>당신조차 미처 의식하지 못한 무의식의 깊은 본심과 보이지 않는 핵심 열쇠</strong>를 담고 있습니다.
+                  </p>
+                </div>
+                <div class="secret-teaser-action">
+                  <button type="button" id="peekSecretCardBtn" class="glass-btn small-btn purple-glow-btn">
+                    <i class="fa-solid fa-eye"></i> <span id="peekBtnText">시크릿 카드 확인하기</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- 인라인 시크릿 카드 엿보기 오픈 영역 -->
+              <div id="inlineSecretPeekBox" class="inline-secret-box hidden">
+                <!-- JS로 엿보기 렌더링 -->
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -222,6 +253,11 @@
 
         <!-- 3장 카드 디스플레이 쇼케이스 (3D 플립 애니메이션) -->
         <div class="cards-showcase-grid" id="cardsShowcaseGrid">
+          <!-- JS로 동적 렌더링 -->
+        </div>
+
+        <!-- [시크릿 섀도 카드 특별 쇼케이스] -->
+        <div class="secret-card-reading-showcase glass-panel" id="secretCardShowcase">
           <!-- JS로 동적 렌더링 -->
         </div>
 

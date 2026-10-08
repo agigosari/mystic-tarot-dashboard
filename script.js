@@ -13,6 +13,7 @@
     question: "",
     deck: [],
     selectedCards: [], // Max 3 cards: [{ card, isReversed, slotIndex }]
+    secretCard: null, // Bottom of the deck (Shadow card)
     soundEnabled: true,
     apiKey: localStorage.getItem("mystic_tarot_gemini_key") || "",
     model: localStorage.getItem("mystic_tarot_gemini_model") || "gemini-2.5-flash",
@@ -60,6 +61,12 @@
       document.getElementById("slot-1"),
       document.getElementById("slot-2")
     ],
+
+    // Secret Card elements
+    peekSecretCardBtn: document.getElementById("peekSecretCardBtn"),
+    peekBtnText: document.getElementById("peekBtnText"),
+    inlineSecretPeekBox: document.getElementById("inlineSecretPeekBox"),
+    secretCardShowcase: document.getElementById("secretCardShowcase"),
 
     // Reading elements
     readingPeriodBadge: document.getElementById("readingPeriodBadge"),
@@ -349,6 +356,11 @@
     // 6. 리딩 시작 버튼
     DOM.openReadingBtn.addEventListener("click", startReadingPhase);
 
+    // 6-1. 스프레드 뷰 시크릿 카드 엿보기 토글 버튼
+    if (DOM.peekSecretCardBtn) {
+      DOM.peekSecretCardBtn.addEventListener("click", toggleSecretCardPeek);
+    }
+
     // 7. 다시 점치기 & 공유 버튼
     DOM.newReadingBtn.addEventListener("click", () => {
       resetSelection();
@@ -521,6 +533,23 @@
     }
     STATE.deck = deck;
 
+    // 스프레드 맨 아래에 숨겨진 시크릿 카드 (The Shadow Card / Bottom of Deck) 지정
+    const bottomCard = deck[deck.length - 1];
+    STATE.secretCard = {
+      card: bottomCard,
+      isReversed: Math.random() < 0.28,
+      deckIndex: deck.length - 1
+    };
+
+    // 인라인 엿보기 상자 닫기 초기화
+    if (DOM.inlineSecretPeekBox) {
+      DOM.inlineSecretPeekBox.classList.add("hidden");
+      DOM.inlineSecretPeekBox.innerHTML = "";
+    }
+    if (DOM.peekBtnText) {
+      DOM.peekBtnText.textContent = "시크릿 카드 확인하기";
+    }
+
     DOM.tarotCardsContainer.innerHTML = "";
 
     deck.forEach((card, index) => {
@@ -547,6 +576,47 @@
     setTimeout(() => {
       DOM.tarotCardsContainer.scrollLeft = 0;
     }, 100);
+  }
+
+  // 시크릿 카드 엿보기 토글 핸들러
+  function toggleSecretCardPeek() {
+    if (!STATE.secretCard) return;
+
+    const isHidden = DOM.inlineSecretPeekBox.classList.contains("hidden");
+    if (isHidden) {
+      renderInlineSecretCard();
+      DOM.inlineSecretPeekBox.classList.remove("hidden");
+      DOM.peekBtnText.textContent = "시크릿 카드 닫기";
+      sound.playFlip();
+    } else {
+      DOM.inlineSecretPeekBox.classList.add("hidden");
+      DOM.peekBtnText.textContent = "시크릿 카드 확인하기";
+      sound.playCardSelect();
+    }
+  }
+
+  function renderInlineSecretCard() {
+    const s = STATE.secretCard;
+    const card = s.card;
+    const isRev = s.isReversed;
+    const dirText = isRev ? "역방향 (Reversed)" : "정방향 (Upright)";
+    const kws = isRev ? card.keywords.reversed.slice(0, 3).join(", ") : card.keywords.upright.slice(0, 3).join(", ");
+    const meaning = isRev ? card.meaning.reversed : card.meaning.upright;
+
+    DOM.inlineSecretPeekBox.innerHTML = `
+      <div class="inline-secret-card-display">
+        <div class="mini-revealed-card">
+          <div style="font-size: 2.2rem; margin-bottom: 4px; ${isRev ? 'transform: rotate(180deg);' : ''}">${card.icon}</div>
+          <div style="font-size: 0.72rem; font-weight: 700; color: var(--gold-light);">${card.name.split('(')[0]}</div>
+          <div style="font-size: 0.62rem; color: ${isRev ? '#ff7675' : '#2ecc71'};">${dirText}</div>
+        </div>
+        <div class="inline-secret-details">
+          <h5><i class="fa-solid fa-sparkles"></i> ${card.name} (${dirText})</h5>
+          <div class="secret-kws">숨겨진 무의식의 키워드: ${kws}</div>
+          <p class="secret-exp">${meaning}</p>
+        </div>
+      </div>
+    `;
   }
 
   function handleCardClick(card, index, cardEl) {
@@ -646,15 +716,18 @@
     goToStep("reading");
     sound.playChime();
 
-    // 3장 카드 쇼케이스 렌더링 & 플립
+    // 3장 메인 카드 쇼케이스 렌더링
     renderShowcaseCards();
+
+    // 시크릿 섀도 카드 쇼케이스 렌더링
+    renderSecretShowcase();
 
     // AI 리딩 로딩 활성화
     DOM.readingLoadingIndicator.classList.remove("hidden");
     DOM.readingContentContainer.classList.add("hidden");
     DOM.luckyInsightsBox.classList.add("hidden");
 
-    // 3장의 카드를 순서대로 0.6초 간격으로 오픈
+    // 3장의 메인 카드를 순서대로 0.6초 간격으로 오픈
     for (let i = 0; i < 3; i++) {
       await new Promise((r) => setTimeout(r, 650));
       const flipCard = document.getElementById(`flipCard-${i}`);
@@ -662,6 +735,15 @@
         flipCard.classList.add("revealed");
         sound.playFlip();
       }
+    }
+
+    // 이어서 덱 맨 아래 숨겨진 4번째 시크릿 카드 오픈!
+    await new Promise((r) => setTimeout(r, 800));
+    const secretFlip = document.getElementById("secretFlipCard");
+    if (secretFlip) {
+      secretFlip.classList.add("revealed");
+      sound.playFlip();
+      sound.playChime();
     }
 
     // Gemini API 호출 또는 내장 오라클 엔진 호출
@@ -727,11 +809,77 @@
     });
   }
 
+  // 시크릿 카드 (The Shadow Card) 단독 쇼케이스 렌더링
+  function renderSecretShowcase() {
+    if (!DOM.secretCardShowcase || !STATE.secretCard) return;
+
+    const s = STATE.secretCard;
+    const card = s.card;
+    const isRev = s.isReversed;
+    const dirText = isRev ? "역방향 (Reversed)" : "정방향 (Upright)";
+    const dirClass = isRev ? "reversed" : "upright";
+    const keywords = isRev ? card.keywords.reversed.slice(0, 3).join(", ") : card.keywords.upright.slice(0, 3).join(", ");
+    const meaningSnippet = isRev ? card.meaning.reversed : card.meaning.upright;
+
+    DOM.secretCardShowcase.innerHTML = `
+      <div class="secret-showcase-header">
+        <span class="secret-tag"><i class="fa-solid fa-key"></i> 덱 맨 아래의 시크릿 카드 (The Shadow Card)</span>
+        <h3 class="secret-showcase-title">무의식이 숨겨둔 비밀의 열쇠 & 기저의 복선</h3>
+        <p class="secret-showcase-desc">질문자님의 내면 깊은 곳에서 이 운세를 관통하고 있는 보이지 않는 힘과 숨겨진 해답입니다.</p>
+      </div>
+
+      <div class="secret-showcase-content">
+        <div class="secret-showcase-card-col">
+          <div class="flip-card" id="secretFlipCard">
+            <div class="flip-card-inner">
+              <!-- 뒷면 -->
+              <div class="flip-card-front card-back-design" style="border-color: var(--purple-accent);">
+                <div class="card-back-pattern">
+                  <span class="sigil-center">🔮</span>
+                  <span class="sigil-sub">SECRET SHADOW</span>
+                </div>
+              </div>
+
+              <!-- 앞면 -->
+              <div class="flip-card-back ${isRev ? "is-reversed" : ""}" style="border-color: var(--purple-accent); box-shadow: 0 0 25px var(--purple-glow);">
+                <div class="card-top-meta">
+                  <span class="arcana-num">${card.roman}</span>
+                  <span class="direction-badge ${dirClass}">${dirText}</span>
+                </div>
+                
+                <div class="card-center-art">
+                  <div class="card-symbol-center">${card.icon}</div>
+                </div>
+
+                <div class="card-bottom-info">
+                  <div class="card-korean-name">${card.name.split("(")[0]}</div>
+                  <div class="card-eng-name">${card.engName}</div>
+                  <div class="card-keywords-summary">${keywords}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="secret-showcase-details-col">
+          <span class="secret-sub-badge">무의식 심층의 상징</span>
+          <h4 class="secret-card-headline">${card.name} (${dirText})</h4>
+          <div class="secret-card-subkws">핵심 숨은 키워드: ${keywords}</div>
+          <p class="secret-card-deep-desc">
+            ${meaningSnippet}<br><br>
+            이 카드는 겉으로 드러난 3장의 흐름 뒤편에서 질문자님의 감정과 무의식이 진정으로 갈망하거나 주의해야 할 '숨은 변수'를 의미합니다.
+          </p>
+        </div>
+      </div>
+    `;
+  }
+
   // ================= INTERPRETATION ENGINE (Gemini API / Fallback) =================
   async function generateInterpretation() {
     const card1 = STATE.selectedCards[0];
     const card2 = STATE.selectedCards[1];
     const card3 = STATE.selectedCards[2];
+    const secretCard = STATE.secretCard;
 
     const promptContext = `
 [사용자 타로 운세 리딩 의뢰]
@@ -741,14 +889,16 @@
   1번 카드 (과거 및 현재 상황): ${card1.card.name} [${card1.isReversed ? "역방향" : "정방향"}]
   2번 카드 (마주한 도전 과제 및 조언): ${card2.card.name} [${card2.isReversed ? "역방향" : "정방향"}]
   3번 카드 (미래 운세 흐름 및 최종 결과): ${card3.card.name} [${card3.isReversed ? "역방향" : "정방향"}]
+- 덱 맨 아래 숨겨져 있던 시크릿 카드 (The Shadow Card / 무의식의 본심과 숨은 열쇠):
+  시크릿 카드: ${secretCard.card.name} [${secretCard.isReversed ? "역방향" : "정방향"}]
 
 당신은 30년 경력의 신비롭고 지혜로운 정통 타로 마스터이자 마인드풀니스 카운슬러입니다.
-위 질문자의 질문 내용에 깊이 공감하며, 3장의 카드를 유기적으로 연결하여 상세하고 품격 높은 한국어로 운세를 해석해주세요.
+위 질문자의 질문 내용에 깊이 공감하며, 3장의 카드와 맨 아래의 시크릿 카드를 유기적으로 연결하여 상세하고 품격 높은 한국어로 운세를 해석해주세요.
 
 답변 작성 규칙:
 1. 마크다운 형식을 사용하여 소제목과 단락을 아름답고 가독성 있게 구성하세요.
 2. 질문자의 주관식 질문에 대한 직접적이고 명쾌한 조언을 전달하세요.
-3. [1단계: 현재의 맥락과 에너지 흐름] -> [2단계: 돌파해야 할 과제와 행동 조언] -> [3단계: 미래의 가능성과 최종 결실] -> [타로 마스터의 종합 마인드셋 조언] 순으로 서술하세요.
+3. [1단계: 현재의 맥락과 에너지 흐름] -> [2단계: 돌파해야 할 과제와 행동 조언] -> [3단계: 미래의 가능성과 최종 결실] -> [4단계: 덱 맨 아래 시크릿 카드가 전하는 무의식의 비밀 열쇠와 복선] -> [타로 마스터의 종합 마인드셋 조언] 순으로 깊이 있게 서술하세요.
 4. 마지막 줄에 다음 형식으로 행운의 지표 4가지를 정확히 기재해주세요:
 LUCKY_DATA: { "keyword": "행운키워드2~3개", "color": "행운의컬러", "number": "행운의숫자1~2개", "mantra": "오늘의한줄조언" }
 `.trim();
@@ -762,12 +912,12 @@ LUCKY_DATA: { "keyword": "행운키워드2~3개", "color": "행운의컬러", "n
       } catch (err) {
         console.error("Gemini API Error, falling back to local oracle:", err);
         showToast("Gemini API 호출 지연으로 고성능 내장 오라클 엔진으로 전환되었습니다.");
-        resultMarkdown = generateLocalInterpretation(card1, card2, card3);
+        resultMarkdown = generateLocalInterpretation(card1, card2, card3, secretCard);
       }
     } else {
       // 내장 오라클 엔진 호출
       await new Promise((r) => setTimeout(r, 1200)); // 실감나는 연출 대기
-      resultMarkdown = generateLocalInterpretation(card1, card2, card3);
+      resultMarkdown = generateLocalInterpretation(card1, card2, card3, secretCard);
     }
 
     // LUCKY_DATA 파싱
@@ -782,7 +932,7 @@ LUCKY_DATA: { "keyword": "행운키워드2~3개", "color": "행운의컬러", "n
     }
 
     if (!luckyData) {
-      luckyData = generateDefaultLuckyData(card1, card2, card3);
+      luckyData = generateDefaultLuckyData(card1, card2, card3, secretCard);
     }
 
     // 로딩 숨기고 타이핑 효과로 텍스트 출력
@@ -837,7 +987,7 @@ LUCKY_DATA: { "keyword": "행운키워드2~3개", "color": "행운의컬러", "n
   }
 
   // ================= BUILT-IN MYSTIC ORACLE ENGINE (FALLBACK) =================
-  function generateLocalInterpretation(c1, c2, c3) {
+  function generateLocalInterpretation(c1, c2, c3, sc) {
     const q = STATE.question;
     const p = PERIOD_NAMES[STATE.period];
 
@@ -856,10 +1006,15 @@ LUCKY_DATA: { "keyword": "행운키워드2~3개", "color": "행운의컬러", "n
     const c3Kw = c3.isReversed ? c3.card.keywords.reversed : c3.card.keywords.upright;
     const c3Meaning = c3.isReversed ? c3.card.meaning.reversed : c3.card.meaning.upright;
 
+    const scName = sc ? sc.card.name : "시크릿 아르카나";
+    const scDir = sc && sc.isReversed ? "역방향" : "정방향";
+    const scKw = sc ? (sc.isReversed ? sc.card.keywords.reversed : sc.card.keywords.upright) : ["통찰", "비밀", "기회"];
+    const scMeaning = sc ? (sc.isReversed ? sc.card.meaning.reversed : sc.card.meaning.upright) : "내면의 숨은 힘을 상징합니다.";
+
     return `
 ### 🌌 [질문 맥락에 대한 영적 공감]
 질문자님께서 마음에 품으신 **"${q}"**에 대한 **${p}**의 천구(天球)가 열렸습니다. 
-선택하신 3장의 카드는 우연이 아닌 질문자님의 무의식이 우주의 에너지와 공명하여 이끌어낸 필연적인 나침반입니다.
+선택하신 3장의 카드와 덱 맨 아래 숨겨져 있던 시크릿 카드는 우연이 아닌 질문자님의 무의식이 우주의 에너지와 공명하여 이끌어낸 필연적인 나침반입니다.
 
 ---
 
@@ -889,20 +1044,29 @@ ${c3Meaning}
 
 ---
 
+### 🗝️ 4. [시크릿 섀도 카드] 무의식의 숨은 열쇠: ${scName} (${scDir})
+> **핵심 키워드**: ${scKw.slice(0, 3).join(", ")}
+
+스프레드 덱의 맨 밑바닥에 조용히 머물며 이번 운세의 기저를 지탱하고 있던 시크릿 카드는 **${scName}**입니다.
+${scMeaning}
+겉으로는 질문에 대해 특정 결과를 고민하고 계시지만, 내면 깊은 곳에서는 **${scKw[0]}**에 대한 갈망이나 불안이 함께 작용하고 있음을 보여줍니다. 이 시크릿 카드가 가리키는 무의식의 소리에 솔직해질 때, 비로소 1~3번 카드의 흐름이 완전한 평온과 성공으로 이어질 것입니다.
+
+---
+
 ### 🕊️ 타로 마스터의 종합 제언
 > *"운명은 정해진 바위가 아니라, 당신의 의지와 지혜로 빚어가는 맑은 강물과 같습니다."*
 
-질문자님의 마음에 깃든 선한 의도와 노력은 이미 우주의 지지를 받고 있습니다. 오늘 마주한 타로의 상징을 마음속 등불 삼아, 편안하고 자신감 넘치는 발걸음을 이어가시길 축원합니다.
+질문자님의 마음에 깃든 선한 의도와 노력은 이미 우주의 지지를 받고 있습니다. 덱 맨 밑바닥의 시크릿 카드까지 드러난 만큼, 보이지 않던 불안을 해소하고 자신감 넘치는 발걸음을 이어가시길 축원합니다.
 
-LUCKY_DATA: { "keyword": "${c3Kw[0]}, ${c1Kw[0]}", "color": "${c1.card.color ? '신비로운 ' + c1.card.name.split(' ')[0] + ' 톤' : '골드 & 바이올렛'}", "number": "${c1.card.number || 7}, ${c3.card.number || 21}", "mantra": "나의 직관을 믿고 평온한 용기로 오늘을 살아가기" }
+LUCKY_DATA: { "keyword": "${c3Kw[0]}, ${scKw[0]}", "color": "${sc && sc.card.color ? '신비로운 톤' : '골드 & 딥 퍼플'}", "number": "${c1.card.number || 7}, ${sc ? (sc.card.number || 12) : 21}", "mantra": "나의 무의식과 직관을 신뢰하며 담대하게 나아가기" }
 `.trim();
   }
 
-  function generateDefaultLuckyData(c1, c2, c3) {
+  function generateDefaultLuckyData(c1, c2, c3, sc) {
     return {
-      keyword: `${c3.card.keywords.upright[0]}, ${c1.card.keywords.upright[0]}`,
-      color: "미드나잇 블루 & 골드",
-      number: `${(c1.card.number % 9) + 1}, ${(c3.card.number % 9) + 1}`,
+      keyword: `${c3.card.keywords.upright[0]}, ${sc ? sc.card.keywords.upright[0] : c1.card.keywords.upright[0]}`,
+      color: "미드나잇 퍼플 & 골드",
+      number: `${(c1.card.number % 9) + 1}, ${sc ? ((sc.card.number % 9) + 1) : 7}`,
       mantra: "지나간 걱정을 내려놓고 지금 눈앞의 가능성에 집중하기"
     };
   }
