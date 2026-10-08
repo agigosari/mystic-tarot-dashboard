@@ -1,4 +1,7 @@
-// 78장 타로 카드 마스터 데이터셋 (Major 22장 + Minor 56장)
+// 78장 정통 라이더-웨이트-스미스(Rider-Waite-Smith 1909) 타로 카드 마스터 데이터셋
+const RWS_BASE_URL = "https://cdn.jsdelivr.net/gh/mixvlad/TarotCards@main/tarot/rider-waite/720px/";
+const RWS_COVER_URL = "https://cdn.jsdelivr.net/gh/mixvlad/TarotCards@main/tarot/rider-waite/720px/Cover.jpg";
+
 const TAROT_CARDS = [
   // ================= MAJOR ARCANA (22장) =================
   {
@@ -10,6 +13,7 @@ const TAROT_CARDS = [
     suit: "major",
     roman: "0",
     icon: "🌟",
+    image: RWS_BASE_URL + "00_Fool.jpg",
     color: "#e6c35c",
     keywords: {
       upright: ["새로운 시작", "순수함", "자유", "모험", "잠재력", "열린 가능성"],
@@ -471,16 +475,56 @@ const MINOR_RANKS = [
   { rank: "King", num: 14, label: "왕 (King)", up: "최고의 통솔력, 지혜, 안정적 성취", rev: "독선, 오만, 통제력 남용" }
 ];
 
-// 56장 마이너 카드 디테일 자동 조합 및 특화 키워드 주입
+// ================= MAJOR ARCANA RWS IMAGE INJECTION =================
+const MAJOR_IMAGE_FILES = [
+  "00_Fool.jpg",
+  "01_Magician.jpg",
+  "02_High_Priestess.jpg",
+  "03_Empress.jpg",
+  "04_Emperor.jpg",
+  "05_Hierophant.jpg",
+  "06_Lovers.jpg",
+  "07_Chariot.jpg",
+  "08_Strength.jpg",
+  "09_Hermit.jpg",
+  "10_Wheel_of_Fortune.jpg",
+  "11_Justice.jpg",
+  "12_Hanged_Man.jpg",
+  "13_Death.jpg",
+  "14_Temperance.jpg",
+  "15_Devil.jpg",
+  "16_Tower.jpg",
+  "17_Star.jpg",
+  "18_Moon.jpg",
+  "19_Sun.jpg",
+  "20_Judgement.jpg",
+  "21_World.jpg"
+];
+
+for (let i = 0; i < 22; i++) {
+  TAROT_CARDS[i].image = RWS_BASE_URL + MAJOR_IMAGE_FILES[i];
+}
+
+// 56장 마이너 카드 디테일 자동 조합 및 특화 키워드/고화질 RWS 원화 주입
 (function buildMinorArcana() {
   const suits = ["wands", "cups", "swords", "pentacles"];
+  const suitPrefixMap = {
+    wands: "Wands",
+    cups: "Cups",
+    swords: "Swords",
+    pentacles: "Pents"
+  };
   
   suits.forEach(suitKey => {
     const meta = SUIT_META[suitKey];
+    const prefix = suitPrefixMap[suitKey];
+
     MINOR_RANKS.forEach(r => {
       const cardId = `${suitKey[0]}_${r.rank.toLowerCase()}`;
       const fullName = `${meta.name.split(" ")[0]} ${r.label} (${r.rank} of ${suitKey.charAt(0).toUpperCase() + suitKey.slice(1)})`;
       const engName = `${r.rank} of ${suitKey.charAt(0).toUpperCase() + suitKey.slice(1)}`;
+      const numStr = r.num < 10 ? "0" + r.num : String(r.num);
+      const imageUrl = `${RWS_BASE_URL}${prefix}${numStr}.jpg`;
       
       let specificUpright = [];
       let specificReversed = [];
@@ -519,6 +563,7 @@ const MINOR_RANKS = [
         suit: suitKey,
         roman: r.rank === "Ace" ? "A" : (r.num <= 10 ? String(r.num) : r.rank.substring(0, 1)),
         icon: meta.icon,
+        image: imageUrl,
         color: meta.color,
         keywords: {
           upright: specificUpright,

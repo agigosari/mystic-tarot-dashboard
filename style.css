@@ -578,14 +578,34 @@ body {
   animation: cardDropIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.slot-placed-card .placed-pattern {
-  font-size: 2.2rem;
+.placed-thumb-box {
+  width: 64px;
+  height: 104px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1.5px solid var(--gold-primary);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
   margin-bottom: 6px;
-  filter: drop-shadow(0 0 8px var(--gold-glow));
+  background: #000;
+}
+
+.placed-thumb-box.is-reversed .placed-card-img {
+  transform: rotate(180deg);
+}
+
+.placed-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.placed-meta-info {
+  text-align: center;
 }
 
 .slot-placed-card .placed-name {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   color: var(--gold-light);
   text-align: center;
@@ -593,12 +613,22 @@ body {
 }
 
 .slot-placed-card .placed-dir {
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   padding: 2px 6px;
   border-radius: 4px;
-  margin-top: 4px;
-  background: rgba(245, 208, 97, 0.2);
-  color: var(--gold-primary);
+  margin-top: 3px;
+  display: inline-block;
+  font-weight: 600;
+}
+
+.slot-placed-card .placed-dir.up {
+  background: rgba(46, 204, 113, 0.25);
+  color: #2ecc71;
+}
+
+.slot-placed-card .placed-dir.rev {
+  background: rgba(231, 76, 60, 0.25);
+  color: #ff7675;
 }
 
 .slot-placed-card .remove-btn {
@@ -720,13 +750,14 @@ body {
   transform: translateY(10px) scale(0.92);
 }
 
-/* 카드 뒷면 (정통 기하학 문양 디자인) */
+/* 카드 뒷면 (정통 라이더-웨이트 원화 커버 텍스처 디자인) */
 .card-back-design {
   width: 100%;
   height: 100%;
   border-radius: var(--card-radius);
-  background: radial-gradient(circle at 50% 50%, #201742 0%, #0d0a21 100%);
-  border: 2px solid #b8860b;
+  background: radial-gradient(circle at 50% 50%, rgba(32, 23, 66, 0.6) 0%, rgba(13, 10, 33, 0.85) 100%),
+              url('https://cdn.jsdelivr.net/gh/mixvlad/TarotCards@main/tarot/rider-waite/720px/Cover.jpg') center/cover no-repeat;
+  border: 2px solid #d4af37;
   box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.8), 0 6px 18px rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
@@ -866,8 +897,8 @@ body {
 }
 
 .flip-card {
-  width: 220px;
-  height: 350px;
+  width: 230px;
+  height: 380px;
   perspective: 1200px;
   cursor: pointer;
   margin-bottom: 14px;
@@ -909,21 +940,18 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 16px;
+  padding: 12px 14px 14px;
   overflow: hidden;
   position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8), 0 0 20px var(--gold-glow);
 }
 
-/* 역방향 카드 시각적 처리 */
-.flip-card-back.is-reversed .card-symbol-center {
-  transform: rotate(180deg);
-  filter: drop-shadow(0 0 10px #e74c3c);
-}
-
+/* 상단 메타 바 */
 .card-top-meta {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 8px;
 }
 
 .arcana-num {
@@ -952,20 +980,34 @@ body {
   border: 1px solid rgba(231, 76, 60, 0.4);
 }
 
-.card-center-art {
+/* 실제 라이더-웨이트 타로 일러스트레이션 아트워크 프레임 */
+.card-rws-illustration-wrap {
+  flex: 1;
+  width: 100%;
+  height: 240px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1.5px solid rgba(245, 208, 97, 0.4);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.7), 0 4px 15px rgba(0, 0, 0, 0.5);
+  background: #110d24;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  flex: 1;
-  margin: 10px 0;
+  margin-bottom: 8px;
 }
 
-.card-symbol-center {
-  font-size: 3.8rem;
-  margin-bottom: 12px;
-  transition: transform 0.5s ease;
-  filter: drop-shadow(0 0 16px var(--gold-glow));
+.rws-card-art-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+  filter: contrast(1.05) saturate(1.08);
+}
+
+/* 역방향(Reversed)일 때 실제 카드가 거꾸로 뒤집힌 시각적 효과 */
+.card-rws-illustration-wrap.reversed-art .rws-card-art-img {
+  transform: rotate(180deg);
+  filter: contrast(1.05) saturate(1.08) drop-shadow(0 0 8px rgba(231, 76, 60, 0.4));
 }
 
 .card-bottom-info {
@@ -1670,19 +1712,26 @@ body {
   padding: 16px;
 }
 
-.inline-secret-card-display .mini-revealed-card {
-  width: 90px;
-  height: 145px;
+.inline-secret-card-display .mini-revealed-card-real {
+  width: 80px;
+  height: 128px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #241b4b 0%, #110c28 100%);
+  overflow: hidden;
   border: 1.5px solid var(--gold-primary);
   box-shadow: 0 0 15px var(--gold-glow);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 8px;
-  text-align: center;
+  background: #000;
+  flex-shrink: 0;
+}
+
+.inline-secret-card-display .mini-revealed-card-real.is-reversed .rws-mini-img {
+  transform: rotate(180deg);
+}
+
+.rws-mini-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
 }
 
 .inline-secret-details h5 {

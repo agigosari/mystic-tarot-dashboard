@@ -605,10 +605,8 @@
 
     DOM.inlineSecretPeekBox.innerHTML = `
       <div class="inline-secret-card-display">
-        <div class="mini-revealed-card">
-          <div style="font-size: 2.2rem; margin-bottom: 4px; ${isRev ? 'transform: rotate(180deg);' : ''}">${card.icon}</div>
-          <div style="font-size: 0.72rem; font-weight: 700; color: var(--gold-light);">${card.name.split('(')[0]}</div>
-          <div style="font-size: 0.62rem; color: ${isRev ? '#ff7675' : '#2ecc71'};">${dirText}</div>
+        <div class="mini-revealed-card-real ${isRev ? 'is-reversed' : ''}">
+          <img src="${card.image}" alt="${card.name}" class="rws-mini-img">
         </div>
         <div class="inline-secret-details">
           <h5><i class="fa-solid fa-sparkles"></i> ${card.name} (${dirText})</h5>
@@ -659,9 +657,13 @@
     holder.innerHTML = `
       <div class="slot-placed-card">
         <button type="button" class="remove-btn" title="선택 취소" aria-label="선택 취소">&times;</button>
-        <div class="placed-pattern">${entry.card.icon}</div>
-        <div class="placed-name">${entry.card.name.split("(")[0]}</div>
-        <div class="placed-dir">${entry.isReversed ? "역방향 (Reversed)" : "정방향 (Upright)"}</div>
+        <div class="placed-thumb-box ${entry.isReversed ? 'is-reversed' : ''}">
+          <img src="${entry.card.image}" alt="${entry.card.name}" class="placed-card-img">
+        </div>
+        <div class="placed-meta-info">
+          <div class="placed-name">${entry.card.name.split("(")[0]}</div>
+          <div class="placed-dir ${entry.isReversed ? 'rev' : 'up'}">${entry.isReversed ? "역방향" : "정방향"}</div>
+        </div>
       </div>
     `;
 
@@ -779,15 +781,15 @@
               </div>
             </div>
 
-            <!-- 앞면 -->
+            <!-- 앞면 (실제 타로카드 원화 일러스트) -->
             <div class="flip-card-back ${isRev ? "is-reversed" : ""}">
               <div class="card-top-meta">
                 <span class="arcana-num">${card.roman}</span>
                 <span class="direction-badge ${dirClass}">${dirText}</span>
               </div>
               
-              <div class="card-center-art">
-                <div class="card-symbol-center">${card.icon}</div>
+              <div class="card-rws-illustration-wrap ${isRev ? 'reversed-art' : ''}">
+                <img src="${card.image}" alt="${card.name}" class="rws-card-art-img" loading="lazy">
               </div>
 
               <div class="card-bottom-info">
@@ -840,15 +842,15 @@
                 </div>
               </div>
 
-              <!-- 앞면 -->
+              <!-- 앞면 (실제 타로카드 원화 일러스트) -->
               <div class="flip-card-back ${isRev ? "is-reversed" : ""}" style="border-color: var(--purple-accent); box-shadow: 0 0 25px var(--purple-glow);">
                 <div class="card-top-meta">
                   <span class="arcana-num">${card.roman}</span>
                   <span class="direction-badge ${dirClass}">${dirText}</span>
                 </div>
                 
-                <div class="card-center-art">
-                  <div class="card-symbol-center">${card.icon}</div>
+                <div class="card-rws-illustration-wrap ${isRev ? 'reversed-art' : ''}">
+                  <img src="${card.image}" alt="${card.name}" class="rws-card-art-img" loading="lazy">
                 </div>
 
                 <div class="card-bottom-info">
